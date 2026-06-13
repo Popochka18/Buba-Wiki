@@ -41,48 +41,52 @@
         },
     };
 
-    /* ---- Поиск ---- */
-    const input = document.getElementById('site-search');
-    const box = document.getElementById('search-results');
+    /* ---- Поиск (поддержка нескольких форм .searchbar) ---- */
+    function wireSearch(form) {
+        const input = form.querySelector('input[type="search"]');
+        const box = form.querySelector('.searchbar__results');
+        if (!input || !box) return;
 
-    function renderResults(results) {
-        if (!box) return;
-        box.innerHTML = '';
-        if (!results.length) {
-            box.appendChild(Avroria.el('li', { class: 'sr-empty', text: 'Ничего не найдено' }));
-            box.hidden = false;
-            return;
-        }
-        results.forEach((r) => {
-            const a = Avroria.el('a', { href: r.url }, [r.name]);
-            if (r.snippet) {
-                a.appendChild(Avroria.el('span', { class: 'sr-snippet', text: '…' + r.snippet + '…' }));
+        function render(results) {
+            box.innerHTML = '';
+            if (!results.length) {
+                box.appendChild(Avroria.el('li', { class: 'sr-empty', text: 'Ничего не найдено' }));
+                box.hidden = false;
+                return;
             }
-            box.appendChild(Avroria.el('li', {}, [a]));
-        });
-        box.hidden = false;
-    }
+            results.forEach((r) => {
+                const a = Avroria.el('a', { href: r.url }, [r.name]);
+                if (r.snippet) {
+                    a.appendChild(Avroria.el('span', { class: 'sr-snippet', text: '…' + r.snippet + '…' }));
+                }
+                box.appendChild(Avroria.el('li', {}, [a]));
+            });
+            box.hidden = false;
+        }
 
-    const runSearch = Avroria.debounce(function () {
-        const q = input.value.trim();
-        if (!q) { box.hidden = true; return; }
-        fetch(api('search.php?q=') + encodeURIComponent(q))
-            .then((r) => r.json())
-            .then((d) => renderResults(d.results || []))
-            .catch(() => { box.hidden = true; });
-    }, 220);
+        const run = Avroria.debounce(function () {
+            const q = input.value.trim();
+            if (!q) { box.hidden = true; return; }
+            fetch(api('search.php?q=') + encodeURIComponent(q))
+                .then((r) => r.json())
+                .then((d) => render(d.results || []))
+                .catch(() => { box.hidden = true; });
+        }, 220);
 
-    if (input) {
-        input.addEventListener('input', runSearch);
-        input.addEventListener('focus', () => { if (input.value.trim()) runSearch(); });
+        input.addEventListener('input', run);
+        input.addEventListener('focus', () => { if (input.value.trim()) run(); });
         document.addEventListener('click', (e) => {
-            if (box && !box.contains(e.target) && e.target !== input) box.hidden = true;
+            if (!box.contains(e.target) && e.target !== input) box.hidden = true;
         });
     }
 
+    document.querySelectorAll('.searchbar').forEach(wireSearch);
+
+    // Переход к первому результату при отправке формы.
     Avroria.search = function (event) {
         event.preventDefault();
-        const first = box && box.querySelector('a');
+        const form = event.target.closest('form');
+        const first = form && form.querySelector('.searchbar__results a');
         if (first) window.location.href = first.href;
         return false;
     };

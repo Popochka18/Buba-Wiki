@@ -20,7 +20,7 @@ $arg      = isset($segments[1]) ? implode('/', array_slice($segments, 1)) : '';
 
 switch ($route) {
     case '':
-        render_view(HOME_PAGE, true);
+        render_home();
         break;
 
     case 'wiki':
@@ -50,6 +50,29 @@ switch ($route) {
 }
 
 // --- Контроллеры -------------------------------------------------------------
+
+function render_home(): void
+{
+    $featured    = Page::load(HOME_PAGE);
+    $collections = Collection::all();
+    $recent      = Page::recent(8);
+    $pageCount   = Page::count();
+    $imgCount    = 0;
+    foreach (glob(IMAGES_DIR . '/*') ?: [] as $f) {
+        if (preg_match('/\.(jpe?g|png|gif|webp|svg)$/i', $f)) {
+            $imgCount++;
+        }
+    }
+
+    $content = view_template('home', [
+        'featured'    => $featured->exists ? $featured : null,
+        'collections' => $collections,
+        'recent'      => $recent,
+        'pageCount'   => $pageCount,
+        'imgCount'    => $imgCount,
+    ]);
+    layout('Заглавная страница', $content);
+}
 
 function render_view(string $name, bool $isHome): void
 {

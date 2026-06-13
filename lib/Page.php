@@ -153,6 +153,27 @@ final class Page
         return Markdown::render($this->body);
     }
 
+    /** Краткий анонс: тело статьи, очищенное от разметки. */
+    public function excerpt(int $length = 220): string
+    {
+        $text = $this->body;
+        $text = preg_replace('/^#{1,6}\s+.*$/mu', '', $text) ?? $text;     // заголовки
+        $text = preg_replace('/^\s*>\s?/mu', '', $text) ?? $text;          // цитаты
+        $text = preg_replace('/^\s*[-*+]\s+/mu', '', $text) ?? $text;      // маркеры
+        $text = preg_replace('/!\[[^\]]*\]\([^)]*\)/u', '', $text) ?? $text; // картинки
+        $text = preg_replace('/\[\[[^\]|]+\|([^\]]+)\]\]/u', '$1', $text) ?? $text; // [[A|B]]
+        $text = preg_replace('/\[\[([^\]]+)\]\]/u', '$1', $text) ?? $text;  // [[A]]
+        $text = preg_replace('/\[([^\]]+)\]\([^)]*\)/u', '$1', $text) ?? $text; // [t](u)
+        $text = preg_replace('/[*_`#]+/u', '', $text) ?? $text;            // выделения
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+
+        if (mb_strlen($text) > $length) {
+            $text = mb_substr($text, 0, $length);
+            $text = (preg_replace('/\s+\S*$/u', '', $text) ?? $text) . '…';
+        }
+        return $text;
+    }
+
     /**
      * Сериализует страницу обратно в текст файла.
      *
@@ -211,5 +232,22 @@ final class Page
         }
         sort($names, SORT_NATURAL | SORT_FLAG_CASE);
         return $names;
+    }
+
+    /** @return string[] Недавно изменённые страницы (по времени файла). */
+    public static function recent(int $limit = 8): array
+    {
+        if (!is_dir(PAGES_DIR)) {
+            return [];
+        }
+        $files = glob(PAGES_DIR . '/*.md') ?: [];
+        usort($files, static fn($a, $b) => filemtime($b) <=> filemtime($a));
+        $names = array_map(static fn($f) => basename($f, '.md'), $files);
+        return array_slice($names, 0, $limit);
+    }
+
+    public static function count(): int
+    {
+        return is_dir(PAGES_DIR) ? count(glob(PAGES_DIR . '/*.md') ?: []) : 0;
     }
 }

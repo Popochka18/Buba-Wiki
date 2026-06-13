@@ -80,6 +80,23 @@ function e(string $s): string
     return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+/** Русское склонение существительного по числу (1 страница, 2 страницы, 5 страниц). */
+function plural_ru(int $n, string $one, string $few, string $many): string
+{
+    $n = abs($n) % 100;
+    $n1 = $n % 10;
+    if ($n > 10 && $n < 20) {
+        return $many;
+    }
+    if ($n1 === 1) {
+        return $one;
+    }
+    if ($n1 >= 2 && $n1 <= 4) {
+        return $few;
+    }
+    return $many;
+}
+
 /**
  * Приводит произвольное название к безопасному имени для файловой системы:
  * запрещает обход каталогов и управляющие символы, сохраняя кириллицу,
