@@ -1,0 +1,19 @@
+# Avroria wiki — чистые URL для Apache.
+# Для встроенного сервера PHP используйте: php -S localhost:8000 router.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Существующие файлы (css/js/изображения) отдаём напрямую.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Всё остальное — через единую точку входа.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Защита служебных каталогов от прямого доступа.
+<FilesMatch "\.(md)$">
+    Require all denied
+</FilesMatch>
