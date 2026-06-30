@@ -4,8 +4,8 @@
     <div class="article__rule"></div>
     <div class="missing-card">
         <span class="missing-card__sigil">✶</span>
-        <p>В летописи Аврории пока нет страницы <strong><?= e($name) ?></strong>.</p>
-        <p class="muted">Свитки ждут своего автора.</p>
-        <a class="btn btn--primary" href="<?= url_edit($name) ?>">✎ Создать эту страницу</a>
+        <p><?= t('missing.body', e($name)) ?></p>
+        <p class="muted"><?= t('missing.hint') ?></p>
+        <a class="btn btn--primary" href="<?= url_edit($name) ?>"><?= t('missing.create') ?></a>
     </div>
 </article>

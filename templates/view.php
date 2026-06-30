@@ -11,7 +11,7 @@
                 </div>
             <?php endif; ?>
         </div>
-        <a class="btn btn--edit" href="<?= url_edit($page->name) ?>">✎ Редактировать</a>
+        <a class="btn btn--edit" href="<?= url_edit($page->name) ?>"><?= t('view.edit') ?></a>
     </div>
 
     <div class="article__rule"></div>

@@ -25,7 +25,7 @@ function json_fail(string $message, int $code = 400): never
 function require_post(): void
 {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
-        json_fail('Требуется метод POST', 405);
+        json_fail(t('api.post_required'), 405);
     }
 }
 

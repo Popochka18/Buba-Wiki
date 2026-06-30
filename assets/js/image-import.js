@@ -27,11 +27,11 @@
     }
 
     function loadGallery() {
-        gallery.innerHTML = '<div class="gallery__empty">Загрузка…</div>';
+        gallery.innerHTML = '<div class="gallery__empty">' + A.escapeHtml(A.t('js.loading')) + '</div>';
         fetch(A.api('images.php'))
             .then((r) => r.json())
             .then((d) => { images = d.images || []; renderGallery(); })
-            .catch(() => { gallery.innerHTML = '<div class="gallery__empty">Не удалось загрузить</div>'; });
+            .catch(() => { gallery.innerHTML = '<div class="gallery__empty">' + A.escapeHtml(A.t('js.load_failed')) + '</div>'; });
     }
 
     function renderGallery() {
@@ -39,7 +39,7 @@
         const list = images.filter((im) => im.name.toLowerCase().includes(filter));
         gallery.innerHTML = '';
         if (!list.length) {
-            gallery.innerHTML = '<div class="gallery__empty">Изображений пока нет. Загрузите первое выше.</div>';
+            gallery.innerHTML = '<div class="gallery__empty">' + A.escapeHtml(A.t('js.gallery_empty')) + '</div>';
             return;
         }
         list.forEach((im) => {
@@ -63,16 +63,16 @@
         list.forEach((f) => fd.append('file[]', f));
 
         progress.hidden = false;
-        progress.textContent = 'Загрузка ' + list.length + ' файл(ов)…';
+        progress.textContent = A.t('js.uploading', list.length);
 
         fetch(A.api('upload.php'), { method: 'POST', body: fd })
             .then((r) => r.json())
             .then((d) => {
                 if (!d.ok) {
-                    progress.textContent = 'Ошибка: ' + (d.error || 'не удалось');
+                    progress.textContent = A.t('js.error_prefix') + (d.error || A.t('js.upload_failed'));
                     return;
                 }
-                progress.textContent = '✓ Загружено: ' + d.files.length;
+                progress.textContent = A.t('js.uploaded', d.files.length);
                 setTimeout(() => { progress.hidden = true; }, 1800);
                 // Сразу выбираем первый загруженный файл.
                 loadGallery();
@@ -81,7 +81,7 @@
                     close();
                 }
             })
-            .catch(() => { progress.textContent = 'Ошибка сети при загрузке'; });
+            .catch(() => { progress.textContent = A.t('js.net_error_upload'); });
     }
 
     /* Drag & drop */

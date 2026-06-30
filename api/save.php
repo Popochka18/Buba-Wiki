@@ -17,10 +17,10 @@ $meta = $data['meta'] ?? [];
 $originalName = sanitize_page_name((string) ($data['originalName'] ?? ''));
 
 if ($name === '' || $name === 'Без названия') {
-    json_fail('Укажите название страницы');
+    json_fail(t('api.need_title'));
 }
 if (!is_array($meta)) {
-    json_fail('Некорректные данные инфобокса');
+    json_fail(t('api.bad_infobox'));
 }
 
 // Нормализуем мету: отбрасываем пустые ключи, приводим значения к строкам/массивам.
@@ -46,7 +46,7 @@ foreach ($meta as $key => $value) {
 
 $page = new Page($name);
 if (!$page->save($cleanMeta, $body)) {
-    json_fail('Не удалось записать файл страницы', 500);
+    json_fail(t('api.write_failed'), 500);
 }
 
 // Переименование: удаляем старый файл, если имя изменилось.

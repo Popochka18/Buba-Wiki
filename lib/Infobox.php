@@ -16,7 +16,7 @@ final class Infobox
             return '';
         }
 
-        $h  = '<aside class="infobox" aria-label="Карточка статьи">';
+        $h  = '<aside class="infobox" aria-label="' . e(t('infobox.label')) . '">';
         $h .= '<div class="infobox__title">' . e($page->title()) . '</div>';
 
         // Изображение.
@@ -26,7 +26,7 @@ final class Infobox
         } else {
             $h .= '<div class="infobox__noimage" title="' . ($image !== null ? e($image) : '') . '">'
                 . '<span class="infobox__noimage-ic">⚜</span>'
-                . '<span>Нет изображения</span></div>';
+                . '<span>' . e(t('infobox.no_image')) . '</span></div>';
         }
         $h .= '</div>';
 

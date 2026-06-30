@@ -154,6 +154,22 @@ code {
 }
 .site-nav a:hover { color: var(--gold-bright); border-bottom-color: var(--gold); text-decoration: none; }
 
+.lang-switch {
+    display: flex; align-items: center; gap: 2px;
+    border: 1px solid var(--ui-line); border-radius: 999px;
+    padding: 2px; background: var(--ui-bg);
+}
+.lang-switch__item {
+    font-family: var(--font-display); font-size: 12px; letter-spacing: 1px;
+    color: var(--ui-text-soft); padding: 3px 9px; border-radius: 999px;
+    line-height: 1;
+}
+.lang-switch__item:hover { color: var(--gold-bright); text-decoration: none; }
+.lang-switch__item.is-active {
+    color: #1a140c; background: var(--gold); font-weight: 700;
+}
+.lang-switch__item.is-active:hover { color: #1a140c; }
+
 /* --- Основная область ---------------------------------------------------- */
 
 .site-main { margin-top: 26px; }

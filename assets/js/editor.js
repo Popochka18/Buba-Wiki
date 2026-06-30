@@ -34,13 +34,13 @@
             source.value = MD.htmlToMd(canvas);
             source.hidden = false;
             canvas.hidden = true;
-            toggleBtn.textContent = '⟰ Визуально';
+            toggleBtn.textContent = A.t('js.toggle_visual');
             mode = 'source';
         } else {
             canvas.innerHTML = MD.mdToHtml(source.value);
             canvas.hidden = false;
             source.hidden = true;
-            toggleBtn.textContent = '⟱ Исходник';
+            toggleBtn.textContent = A.t('js.toggle_source');
             mode = 'visual';
         }
     });
@@ -90,14 +90,14 @@
         },
         link: () => {
             const label = selectedText();
-            const url = prompt('Адрес ссылки (http://…):', 'https://');
+            const url = prompt(A.t('js.link_prompt'), 'https://');
             if (!url) return;
             insertHtmlAtCursor('<a href="' + A.escapeHtml(url) + '">' +
                 A.escapeHtml(label || url) + '</a>');
         },
         wikilink: () => {
             const label = selectedText();
-            const target = prompt('Название страницы для вики-ссылки:', label || '');
+            const target = prompt(A.t('js.wikilink_prompt'), label || '');
             if (!target) return;
             const t = target.trim();
             const text = (label || t).trim();
@@ -151,12 +151,12 @@
         if (saving) return;
         const name = nameInput.value.trim();
         if (!name) {
-            setStatus('Укажите название', 'err');
+            setStatus(A.t('js.need_title'), 'err');
             nameInput.focus();
             return;
         }
         saving = true;
-        setStatus('Сохранение…', '');
+        setStatus(A.t('js.saving'), '');
 
         const payload = {
             name,
@@ -174,13 +174,13 @@
             .then((d) => {
                 saving = false;
                 if (d.ok) {
-                    setStatus('✓ Сохранено', 'ok');
+                    setStatus(A.t('js.saved'), 'ok');
                     window.location.href = d.url;
                 } else {
-                    setStatus('Ошибка: ' + (d.error || 'не сохранено'), 'err');
+                    setStatus(A.t('js.error_prefix') + (d.error || A.t('js.not_saved')), 'err');
                 }
             })
-            .catch(() => { saving = false; setStatus('Ошибка сети', 'err'); });
+            .catch(() => { saving = false; setStatus(A.t('js.net_error'), 'err'); });
     }
 
     function setStatus(text, kind) {
