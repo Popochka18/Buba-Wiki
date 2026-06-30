@@ -1,6 +1,6 @@
 <?php /** @var string $pageTitle, $content; @var bool $isEditor */ ?>
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="<?= e(I18n::lang()) ?>" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,21 +19,29 @@
                 <span class="brand__sigil">⚜</span>
                 <span class="brand__text">
                     <span class="brand__name"><?= e(SITE_NAME) ?></span>
-                    <span class="brand__tagline"><?= e(SITE_TAGLINE) ?></span>
+                    <span class="brand__tagline"><?= t('site.tagline') ?></span>
                 </span>
             </a>
 
             <form class="searchbar" onsubmit="return Avroria.search(event)">
-                <input type="search" id="site-search" placeholder="Поиск по летописи…" autocomplete="off">
-                <button type="submit" aria-label="Искать">🔎</button>
+                <input type="search" id="site-search" placeholder="<?= e(t('search.placeholder')) ?>" autocomplete="off">
+                <button type="submit" aria-label="<?= e(t('search.submit')) ?>">🔎</button>
                 <ul class="searchbar__results" id="search-results" hidden></ul>
             </form>
 
             <nav class="site-nav">
-                <a href="<?= url('') ?>">Главная</a>
-                <a href="<?= url_collections() ?>">Коллекции</a>
-                <a href="<?= url('all') ?>">Все страницы</a>
+                <a href="<?= url('') ?>"><?= t('nav.home') ?></a>
+                <a href="<?= url_collections() ?>"><?= t('nav.collections') ?></a>
+                <a href="<?= url('all') ?>"><?= t('nav.all') ?></a>
             </nav>
+
+            <div class="lang-switch" role="group" aria-label="Language">
+                <?php foreach (I18n::languages() as $code): ?>
+                    <a href="<?= e(lang_url($code)) ?>"
+                       class="lang-switch__item<?= $code === I18n::lang() ? ' is-active' : '' ?>"
+                       hreflang="<?= e($code) ?>"><?= e(strtoupper($code)) ?></a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </header>
 
@@ -43,10 +51,13 @@
 
     <footer class="site-footer">
         <span class="site-footer__rule"></span>
-        <p><?= e(SITE_NAME) ?> · собрано хранителями знаний · <?= date('Y') ?></p>
+        <p><?= t('footer.text', e(SITE_NAME), date('Y')) ?></p>
     </footer>
 </div>
-<script>window.AVRORIA_BASE = <?= json_encode(BASE) ?>;</script>
+<script>
+    window.AVRORIA_BASE = <?= json_encode(BASE) ?>;
+    window.AVRORIA_I18N = <?= json_encode(I18n::jsStrings(), JSON_UNESCAPED_UNICODE) ?>;
+</script>
 <script src="<?= asset('js/app.js') ?>"></script>
 <?php if ($isEditor): ?>
     <script src="<?= asset('js/markdown.js') ?>"></script>

@@ -10,7 +10,7 @@ require __DIR__ . '/_bootstrap.php';
 require_post();
 
 if (empty($_FILES['file'])) {
-    json_fail('Файл не передан');
+    json_fail(t('api.no_file'));
 }
 
 if (!is_dir(IMAGES_DIR)) {
@@ -67,17 +67,17 @@ for ($i = 0; $i < $count; $i++) {
     $size     = (int) $get('size');
 
     if ($error !== UPLOAD_ERR_OK) {
-        $errors[] = $origName . ': ошибка загрузки (' . $error . ')';
+        $errors[] = $origName . ': ' . t('api.upload_error') . ' (' . $error . ')';
         continue;
     }
     if ($size <= 0 || $size > MAX_UPLOAD_BYTES) {
-        $errors[] = $origName . ': недопустимый размер';
+        $errors[] = $origName . ': ' . t('api.bad_size');
         continue;
     }
 
     $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
     if (!in_array($ext, ALLOWED_IMAGE_EXT, true)) {
-        $errors[] = $origName . ': недопустимый формат';
+        $errors[] = $origName . ': ' . t('api.bad_format');
         continue;
     }
 
@@ -85,7 +85,7 @@ for ($i = 0; $i < $count; $i++) {
     if ($ext !== 'svg') {
         $info = @getimagesize($tmp);
         if ($info === false) {
-            $errors[] = $origName . ': файл не является изображением';
+            $errors[] = $origName . ': ' . t('api.not_image');
             continue;
         }
     }
@@ -96,7 +96,7 @@ for ($i = 0; $i < $count; $i++) {
     if (!move_uploaded_file($tmp, $target)) {
         // На случай запуска не через обычный upload (например, тесты).
         if (!@rename($tmp, $target)) {
-            $errors[] = $origName . ': не удалось сохранить';
+            $errors[] = $origName . ': ' . t('api.save_failed');
             continue;
         }
     }
@@ -109,7 +109,7 @@ for ($i = 0; $i < $count; $i++) {
 }
 
 if ($saved === []) {
-    json_fail('Не удалось загрузить: ' . implode('; ', $errors));
+    json_fail(t('api.upload_failed', implode('; ', $errors)));
 }
 
 json_out(['ok' => true, 'files' => $saved, 'errors' => $errors]);

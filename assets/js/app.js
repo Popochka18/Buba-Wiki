@@ -4,10 +4,18 @@
 
     const BASE = window.AVRORIA_BASE || '';
     const api = (p) => BASE + '/api/' + p;
+    const I18N = window.AVRORIA_I18N || {};
 
     const Avroria = {
         BASE,
         api,
+        I18N,
+        /* Локализованная строка. Поддерживает %d/%s — подставляется первый аргумент. */
+        t(key, arg) {
+            let s = I18N[key] != null ? I18N[key] : key;
+            if (arg !== undefined) s = s.replace(/%[ds]/, arg);
+            return s;
+        },
         el(tag, attrs, children) {
             const node = document.createElement(tag);
             if (attrs) {
@@ -50,7 +58,7 @@
         function render(results) {
             box.innerHTML = '';
             if (!results.length) {
-                box.appendChild(Avroria.el('li', { class: 'sr-empty', text: 'Ничего не найдено' }));
+                box.appendChild(Avroria.el('li', { class: 'sr-empty', text: Avroria.t('js.search_empty') }));
                 box.hidden = false;
                 return;
             }

@@ -71,7 +71,7 @@ function render_home(): void
         'pageCount'   => $pageCount,
         'imgCount'    => $imgCount,
     ]);
-    layout('Заглавная страница', $content);
+    layout(t('title.home'), $content);
 }
 
 function render_view(string $name, bool $isHome): void
@@ -80,7 +80,7 @@ function render_view(string $name, bool $isHome): void
 
     if (!$page->exists) {
         http_response_code(404);
-        $title   = 'Страница не найдена';
+        $title   = t('title.not_found');
         $content = view_template('missing', ['name' => $name]);
         layout($title, $content);
         return;
@@ -94,14 +94,14 @@ function render_editor(string $name): void
 {
     $page = Page::load($name);
     $content = view_template('editor', ['page' => $page]);
-    layout('Редактор: ' . $page->title(), $content, true);
+    layout(t('title.editor', $page->title()), $content, true);
 }
 
 function render_collections(): void
 {
     $map = Collection::all();
     $content = view_template('collections', ['map' => $map]);
-    layout('Коллекции', $content);
+    layout(t('title.collections'), $content);
 }
 
 function render_collection(string $name): void
@@ -109,14 +109,14 @@ function render_collection(string $name): void
     $name  = sanitize_page_name($name);
     $pages = Collection::pages($name);
     $content = view_template('collection', ['name' => $name, 'pages' => $pages]);
-    layout('Коллекция: ' . $name, $content);
+    layout(t('title.collection', $name), $content);
 }
 
 function render_all_pages(): void
 {
     $names = Page::all();
     $content = view_template('all', ['names' => $names]);
-    layout('Все страницы', $content);
+    layout(t('title.all'), $content);
 }
 
 // --- Рендеринг шаблонов ------------------------------------------------------

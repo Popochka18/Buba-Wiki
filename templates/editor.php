@@ -1,12 +1,13 @@
 <?php
 /** @var Page $page */
 $editorData = [
-    'name'     => $page->name,
-    'exists'   => $page->exists,
-    'body'     => $page->body,
-    'meta'     => (object) $page->meta,
-    'reserved' => RESERVED_KEYS,
-    'urls'     => [
+    'name'      => $page->name,
+    'exists'    => $page->exists,
+    'body'      => $page->body,
+    'meta'      => (object) $page->meta,
+    'reserved'  => RESERVED_KEYS,
+    'templates' => I18n::infoboxTemplates(),
+    'urls'      => [
         'save'     => url('api/save.php'),
         'upload'   => url('api/upload.php'),
         'images'   => url('api/images.php'),
@@ -21,14 +22,14 @@ $editorData = [
     <div class="editor__bar">
         <div class="editor__bar-left">
             <label class="editor__name">
-                <span>Название</span>
+                <span><?= t('editor.name') ?></span>
                 <input type="text" id="page-name" value="<?= e($page->name) ?>" spellcheck="false">
             </label>
         </div>
         <div class="editor__bar-right">
             <span class="editor__status" id="save-status"></span>
-            <a class="btn" href="<?= $page->exists ? url_view($page->name) : url('') ?>">Отмена</a>
-            <button class="btn btn--primary" id="btn-save" type="button">💾 Сохранить</button>
+            <a class="btn" href="<?= $page->exists ? url_view($page->name) : url('') ?>"><?= t('editor.cancel') ?></a>
+            <button class="btn btn--primary" id="btn-save" type="button"><?= t('editor.save') ?></button>
         </div>
     </div>
 
@@ -37,28 +38,28 @@ $editorData = [
         <section class="editor__main" aria-label="Визуальный редактор">
             <div class="editor__toolbar" id="vis-toolbar">
                 <div class="tb-group">
-                    <button type="button" class="tb" data-cmd="h2"  title="Заголовок 2">H2</button>
-                    <button type="button" class="tb" data-cmd="h3"  title="Заголовок 3">H3</button>
-                    <button type="button" class="tb" data-cmd="p"   title="Абзац">¶</button>
+                    <button type="button" class="tb" data-cmd="h2"  title="<?= e(t('editor.tb.h2')) ?>">H2</button>
+                    <button type="button" class="tb" data-cmd="h3"  title="<?= e(t('editor.tb.h3')) ?>">H3</button>
+                    <button type="button" class="tb" data-cmd="p"   title="<?= e(t('editor.tb.p')) ?>">¶</button>
                 </div>
                 <div class="tb-group">
-                    <button type="button" class="tb" data-cmd="bold"   title="Жирный (Ctrl+B)"><b>B</b></button>
-                    <button type="button" class="tb" data-cmd="italic" title="Курсив (Ctrl+I)"><i>I</i></button>
-                    <button type="button" class="tb" data-cmd="code"   title="Моноширинный">&lt;/&gt;</button>
+                    <button type="button" class="tb" data-cmd="bold"   title="<?= e(t('editor.tb.bold')) ?>"><b>B</b></button>
+                    <button type="button" class="tb" data-cmd="italic" title="<?= e(t('editor.tb.italic')) ?>"><i>I</i></button>
+                    <button type="button" class="tb" data-cmd="code"   title="<?= e(t('editor.tb.code')) ?>">&lt;/&gt;</button>
                 </div>
                 <div class="tb-group">
-                    <button type="button" class="tb" data-cmd="ul"    title="Маркированный список">• —</button>
-                    <button type="button" class="tb" data-cmd="ol"    title="Нумерованный список">1.</button>
-                    <button type="button" class="tb" data-cmd="quote" title="Цитата">❝</button>
-                    <button type="button" class="tb" data-cmd="hr"    title="Разделитель">―</button>
+                    <button type="button" class="tb" data-cmd="ul"    title="<?= e(t('editor.tb.ul')) ?>">• —</button>
+                    <button type="button" class="tb" data-cmd="ol"    title="<?= e(t('editor.tb.ol')) ?>">1.</button>
+                    <button type="button" class="tb" data-cmd="quote" title="<?= e(t('editor.tb.quote')) ?>">❝</button>
+                    <button type="button" class="tb" data-cmd="hr"    title="<?= e(t('editor.tb.hr')) ?>">―</button>
                 </div>
                 <div class="tb-group">
-                    <button type="button" class="tb" data-cmd="link"     title="Внешняя ссылка">🔗</button>
-                    <button type="button" class="tb" data-cmd="wikilink" title="Вики-ссылка [[…]]">[[ ]]</button>
-                    <button type="button" class="tb" data-cmd="image"    title="Вставить изображение">🖼</button>
+                    <button type="button" class="tb" data-cmd="link"     title="<?= e(t('editor.tb.link')) ?>">🔗</button>
+                    <button type="button" class="tb" data-cmd="wikilink" title="<?= e(t('editor.tb.wikilink')) ?>">[[ ]]</button>
+                    <button type="button" class="tb" data-cmd="image"    title="<?= e(t('editor.tb.image')) ?>">🖼</button>
                 </div>
                 <div class="tb-group tb-group--right">
-                    <button type="button" class="tb tb--toggle" id="toggle-source" title="Переключить режим">⟱ Исходник</button>
+                    <button type="button" class="tb tb--toggle" id="toggle-source" title="<?= e(t('editor.tb.toggle')) ?>"><?= t('editor.tb.source') ?></button>
                 </div>
             </div>
 
@@ -71,42 +72,53 @@ $editorData = [
         <!-- Редактор инфобокса -->
         <aside class="editor__side" aria-label="Редактор инфобокса">
             <div class="side-panel">
-                <h2 class="side-panel__title">⚜ Инфобокс</h2>
+                <h2 class="side-panel__title"><?= t('editor.infobox') ?></h2>
 
                 <div class="side-panel__block">
-                    <label class="field-label">Изображение карточки</label>
+                    <label class="field-label"><?= t('editor.card_image') ?></label>
                     <div class="infobox-image-pick" id="infobox-image-pick">
                         <div class="infobox-image-pick__preview" id="ib-image-preview">
-                            <span class="muted">нет</span>
+                            <span class="muted"><?= t('js.img_none') ?></span>
                         </div>
                         <div class="infobox-image-pick__actions">
-                            <button type="button" class="btn btn--sm" id="ib-image-choose">Выбрать…</button>
-                            <button type="button" class="btn btn--sm btn--ghost" id="ib-image-clear">Убрать</button>
+                            <button type="button" class="btn btn--sm" id="ib-image-choose"><?= t('editor.choose') ?></button>
+                            <button type="button" class="btn btn--sm btn--ghost" id="ib-image-clear"><?= t('editor.remove') ?></button>
                         </div>
                     </div>
                 </div>
 
                 <div class="side-panel__block">
-                    <label class="field-label">Поля</label>
-                    <div class="ib-fields" id="ib-fields"><!-- строки добавляются JS --></div>
-                    <button type="button" class="btn btn--sm btn--ghost" id="ib-add-field">＋ Добавить поле</button>
+                    <label class="field-label" for="ib-template"><?= t('editor.template') ?></label>
+                    <select id="ib-template" class="field-input">
+                        <option value=""><?= e(t('js.template_none')) ?></option>
+                        <?php foreach ($editorData['templates'] as $tpl): ?>
+                            <option value="<?= e($tpl['id']) ?>"><?= e($tpl['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="hint"><?= t('editor.template_hint') ?></p>
                 </div>
 
                 <div class="side-panel__block">
-                    <label class="field-label">Коллекции</label>
+                    <label class="field-label"><?= t('editor.fields') ?></label>
+                    <div class="ib-fields" id="ib-fields"><!-- строки добавляются JS --></div>
+                    <button type="button" class="btn btn--sm btn--ghost" id="ib-add-field"><?= t('editor.add_field') ?></button>
+                </div>
+
+                <div class="side-panel__block">
+                    <label class="field-label"><?= t('editor.collections') ?></label>
                     <input type="text" id="ib-collections" class="field-input"
-                           placeholder="через запятую, напр.: Фракции, Народы">
-                    <p class="hint">Страница появится в этих коллекциях.</p>
+                           placeholder="<?= e(t('editor.collections_ph')) ?>">
+                    <p class="hint"><?= t('editor.collections_hint') ?></p>
                 </div>
             </div>
 
             <div class="side-panel side-panel--tips">
-                <h3 class="side-panel__title side-panel__title--sm">Подсказки</h3>
+                <h3 class="side-panel__title side-panel__title--sm"><?= t('editor.tips') ?></h3>
                 <ul class="tips">
-                    <li><code>[[Страница]]</code> — вики-ссылка</li>
-                    <li><code>[[Страница|текст]]</code> — ссылка с подписью</li>
-                    <li>Выделите текст и нажмите <b>[[ ]]</b>, чтобы связать</li>
-                    <li>«Исходник» — правка в Markdown напрямую</li>
+                    <li><?= t('editor.tip1') ?></li>
+                    <li><?= t('editor.tip2') ?></li>
+                    <li><?= t('editor.tip3') ?></li>
+                    <li><?= t('editor.tip4') ?></li>
                 </ul>
             </div>
         </aside>
@@ -118,21 +130,21 @@ $editorData = [
     <div class="modal__backdrop" data-close="image-modal"></div>
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="image-modal-title">
         <div class="modal__head">
-            <h2 id="image-modal-title">🖼 Импорт изображений</h2>
-            <button type="button" class="modal__close" data-close="image-modal" aria-label="Закрыть">✕</button>
+            <h2 id="image-modal-title"><?= t('editor.import') ?></h2>
+            <button type="button" class="modal__close" data-close="image-modal" aria-label="<?= e(t('editor.close')) ?>">✕</button>
         </div>
 
         <div class="modal__body">
             <div class="dropzone" id="dropzone">
                 <span class="dropzone__icon">⬆</span>
-                <p>Перетащите изображение сюда<br>или <label class="link" for="file-input">выберите файл</label></p>
+                <p><?= t('editor.drop', '<label class="link" for="file-input">' . e(t('editor.choose_file')) . '</label>') ?></p>
                 <input type="file" id="file-input" accept="image/*" multiple hidden>
                 <div class="dropzone__progress" id="upload-progress" hidden></div>
             </div>
 
             <div class="gallery-head">
-                <span>Библиотека изображений</span>
-                <input type="search" id="gallery-filter" placeholder="фильтр…" class="field-input field-input--sm">
+                <span><?= t('editor.library') ?></span>
+                <input type="search" id="gallery-filter" placeholder="<?= e(t('editor.filter')) ?>" class="field-input field-input--sm">
             </div>
             <div class="gallery" id="gallery"><!-- заполняется JS --></div>
         </div>

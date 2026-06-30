@@ -14,29 +14,28 @@
         <div class="home-hero__sigil">⚜</div>
         <h1 class="home-hero__title"><?= e(SITE_NAME) ?></h1>
         <p class="home-hero__tagline">
-            Летопись мира <strong>Аврории</strong> — фракции и народы, города и пустыни,
-            книги и герои. Открой свиток и узнай, что хранят хроники.
+            <?= t('home.tagline') ?>
         </p>
 
         <form class="searchbar searchbar--hero" onsubmit="return Avroria.search(event)">
-            <input type="search" placeholder="Найти статью в летописи…" autocomplete="off">
-            <button type="submit" aria-label="Искать">🔎</button>
+            <input type="search" placeholder="<?= e(t('home.search')) ?>" autocomplete="off">
+            <button type="submit" aria-label="<?= e(t('search.submit')) ?>">🔎</button>
             <ul class="searchbar__results" hidden></ul>
         </form>
 
         <div class="home-hero__stats">
-            <a href="<?= url('all') ?>"><b><?= $pageCount ?></b> <span><?= plural_ru($pageCount, 'страница', 'страницы', 'страниц') ?></span></a>
+            <a href="<?= url('all') ?>"><b><?= $pageCount ?></b> <span><?= e(I18n::plural('pages', $pageCount)) ?></span></a>
             <span class="home-hero__sep">❖</span>
-            <a href="<?= url_collections() ?>"><b><?= count($collections) ?></b> <span><?= plural_ru(count($collections), 'коллекция', 'коллекции', 'коллекций') ?></span></a>
+            <a href="<?= url_collections() ?>"><b><?= count($collections) ?></b> <span><?= e(I18n::plural('collections', count($collections))) ?></span></a>
             <span class="home-hero__sep">❖</span>
-            <span><b><?= $imgCount ?></b> <span><?= plural_ru($imgCount, 'изображение', 'изображения', 'изображений') ?></span></span>
+            <span><b><?= $imgCount ?></b> <span><?= e(I18n::plural('images', $imgCount)) ?></span></span>
         </div>
     </section>
 
     <!-- Избранная статья -->
     <?php if ($featured): ?>
         <section class="home-section">
-            <h2 class="home-section__title"><span>✶ Избранная статья</span></h2>
+            <h2 class="home-section__title"><span><?= t('home.featured') ?></span></h2>
             <a class="featured" href="<?= url_view($featured->name) ?>">
                 <div class="featured__media">
                     <?php $img = $featured->image(); ?>
@@ -54,7 +53,7 @@
                         </div>
                     <?php endif; ?>
                     <p class="featured__excerpt"><?= e($featured->excerpt(260)) ?></p>
-                    <span class="btn btn--primary">Читать статью →</span>
+                    <span class="btn btn--primary"><?= t('home.read') ?></span>
                 </div>
             </a>
         </section>
@@ -63,41 +62,41 @@
     <div class="home-columns">
         <!-- Коллекции -->
         <section class="home-section">
-            <h2 class="home-section__title"><span>◆ Коллекции</span></h2>
+            <h2 class="home-section__title"><span><?= t('home.collections') ?></span></h2>
             <?php if ($collections): ?>
                 <div class="collections-grid">
                     <?php foreach ($collections as $name => $pages): ?>
                         <a class="collection-card" href="<?= url_collection($name) ?>">
                             <span class="collection-card__icon">◆</span>
                             <span class="collection-card__name"><?= e($name) ?></span>
-                            <span class="collection-card__count"><?= count($pages) ?> стр.</span>
+                            <span class="collection-card__count"><?= e(t('count.pages_short', count($pages))) ?></span>
                         </a>
                     <?php endforeach; ?>
                 </div>
             <?php else: ?>
-                <p class="muted">Коллекции ещё не созданы.</p>
+                <p class="muted"><?= t('home.collections_empty') ?></p>
             <?php endif; ?>
         </section>
 
         <!-- Недавние страницы -->
         <section class="home-section">
-            <h2 class="home-section__title"><span>❧ Недавние страницы</span></h2>
+            <h2 class="home-section__title"><span><?= t('home.recent') ?></span></h2>
             <?php if ($recent): ?>
                 <ul class="page-list">
                     <?php foreach ($recent as $p): ?>
                         <li><a href="<?= url_view($p) ?>"><?= e($p) ?></a></li>
                     <?php endforeach; ?>
                 </ul>
-                <a class="home-more" href="<?= url('all') ?>">Все страницы →</a>
+                <a class="home-more" href="<?= url('all') ?>"><?= t('home.more') ?></a>
             <?php else: ?>
-                <p class="muted">Страниц пока нет.</p>
+                <p class="muted"><?= t('home.recent_empty') ?></p>
             <?php endif; ?>
         </section>
     </div>
 
     <!-- Призыв к действию -->
     <section class="home-cta">
-        <p>Знаешь то, чего ещё нет в летописи?</p>
-        <a class="btn btn--primary" href="<?= url_edit('Новая страница') ?>">✎ Написать новую страницу</a>
+        <p><?= t('home.cta') ?></p>
+        <a class="btn btn--primary" href="<?= url_edit(t('page.new_name')) ?>"><?= t('home.cta_button') ?></a>
     </section>
 </div>

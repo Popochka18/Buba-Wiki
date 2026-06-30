@@ -36,6 +36,27 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
+// --- Локализация -------------------------------------------------------------
+
+I18n::init();
+
+/** Локализованная строка интерфейса (см. lib/I18n.php). */
+function t(string $key, int|float|string ...$args): string
+{
+    return I18n::t($key, ...$args);
+}
+
+/** URL текущей страницы с переключением языка. */
+function lang_url(string $lang): string
+{
+    $uri   = $_SERVER['REQUEST_URI'] ?? '/';
+    $parts = parse_url($uri);
+    $path  = $parts['path'] ?? '/';
+    parse_str($parts['query'] ?? '', $q);
+    $q['lang'] = $lang;
+    return $path . '?' . http_build_query($q);
+}
+
 // --- URL-хелперы -------------------------------------------------------------
 
 function url(string $path = ''): string
