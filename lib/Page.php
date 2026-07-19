@@ -174,10 +174,26 @@ final class Page
         return $this->name;
     }
 
-    /** Имя файла изображения инфобокса (если задано). */
+    /** Имя файла первого изображения инфобокса (если задано). */
     public function image(): ?string
     {
-        return !empty($this->meta['image']) ? (string) $this->meta['image'] : null;
+        return $this->images()[0] ?? null;
+    }
+
+    /**
+     * Все изображения инфобокса. Поле `image` может быть строкой или
+     * списком [a.jpg, b.jpg] — во втором случае в статье будет карусель.
+     *
+     * @return string[]
+     */
+    public function images(): array
+    {
+        $raw = $this->meta['image'] ?? [];
+        if (is_string($raw)) {
+            $raw = $raw === '' ? [] : [$raw];
+        }
+        $list = array_map(static fn($v) => trim((string) $v), (array) $raw);
+        return array_values(array_filter($list, static fn($v) => $v !== ''));
     }
 
     /** @return string[] Коллекции, которым принадлежит страница. */
