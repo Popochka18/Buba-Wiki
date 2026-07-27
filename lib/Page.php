@@ -19,26 +19,81 @@ final class Page
         $this->name = sanitize_page_name($name);
     }
 
-    public static function path(string $name): string
+    /** Язык, на котором фактически загружена страница (после фолбэка). */
+    public string $lang = '';
+
+    /**
+     * Путь к файлу страницы на заданном языке. Если язык не указан — берётся
+     * текущий язык интерфейса. При отсутствии языковых папок используется
+     * «плоское» хранилище pages/<имя>.md (обратная совместимость).
+     */
+    public static function path(string $name, ?string $lang = null): string
     {
-        return PAGES_DIR . '/' . sanitize_page_name($name) . '.md';
+        $name = sanitize_page_name($name);
+        $lang = $lang ?? I18n::lang();
+        if (self::localized()) {
+            return PAGES_DIR . '/' . $lang . '/' . $name . '.md';
+        }
+        return PAGES_DIR . '/' . $name . '.md';
     }
 
+    /** Существуют ли языковые подпапки pages/<lang>/. */
+    private static function localized(): bool
+    {
+        return is_dir(PAGES_DIR . '/' . I18n::DEFAULT_LANG);
+    }
+
+    /** Языки, в которых может существовать страница (от текущего к запасным). */
+    private static function langChain(?string $lang = null): array
+    {
+        $lang  = $lang ?? I18n::lang();
+        $chain = [$lang];
+        if ($lang !== I18n::DEFAULT_LANG) {
+            $chain[] = I18n::DEFAULT_LANG;
+        }
+        return $chain;
+    }
+
+    /** Папки со страницами (по одной на язык, либо одна «плоская»). */
+    private static function dirs(): array
+    {
+        if (!self::localized()) {
+            return is_dir(PAGES_DIR) ? [PAGES_DIR] : [];
+        }
+        $dirs = [];
+        foreach (I18n::languages() as $l) {
+            $d = PAGES_DIR . '/' . $l;
+            if (is_dir($d)) {
+                $dirs[] = $d;
+            }
+        }
+        return $dirs;
+    }
+
+    /** Страница существует хотя бы на одном языке. */
     public static function existsByName(string $name): bool
     {
-        return is_file(self::path($name));
+        foreach (self::langChain() as $lang) {
+            if (is_file(self::path($name, $lang))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static function load(string $name): self
     {
         $page = new self($name);
-        $file = self::path($name);
-        if (!is_file($file)) {
-            return $page;
+        foreach (self::langChain() as $lang) {
+            $file = self::path($name, $lang);
+            if (is_file($file)) {
+                $page->exists = true;
+                $page->lang   = self::localized() ? $lang : I18n::lang();
+                $raw = (string) file_get_contents($file);
+                [$page->meta, $page->body] = self::parse($raw);
+                return $page;
+            }
         }
-        $page->exists = true;
-        $raw = (string) file_get_contents($file);
-        [$page->meta, $page->body] = self::parse($raw);
         return $page;
     }
 
@@ -119,10 +174,26 @@ final class Page
         return $this->name;
     }
 
-    /** Имя файла изображения инфобокса (если задано). */
+    /** Имя файла первого изображения инфобокса (если задано). */
     public function image(): ?string
     {
-        return !empty($this->meta['image']) ? (string) $this->meta['image'] : null;
+        return $this->images()[0] ?? null;
+    }
+
+    /**
+     * Все изображения инфобокса. Поле `image` может быть строкой или
+     * списком [a.jpg, b.jpg] — во втором случае в статье будет карусель.
+     *
+     * @return string[]
+     */
+    public function images(): array
+    {
+        $raw = $this->meta['image'] ?? [];
+        if (is_string($raw)) {
+            $raw = $raw === '' ? [] : [$raw];
+        }
+        $list = array_map(static fn($v) => trim((string) $v), (array) $raw);
+        return array_values(array_filter($list, static fn($v) => $v !== ''));
     }
 
     /** @return string[] Коллекции, которым принадлежит страница. */
@@ -208,11 +279,13 @@ final class Page
 
     public function save(array $meta, string $body): bool
     {
-        if (!is_dir(PAGES_DIR)) {
-            mkdir(PAGES_DIR, 0775, true);
+        $file = self::path($this->name);
+        $dir  = dirname($file);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
         }
         $text = self::serialize($meta, $body);
-        $ok = file_put_contents(self::path($this->name), $text) !== false;
+        $ok = file_put_contents($file, $text) !== false;
         if ($ok) {
             $this->exists = true;
             [$this->meta, $this->body] = self::parse($text);
@@ -220,16 +293,31 @@ final class Page
         return $ok;
     }
 
+    /**
+     * Карта: имя страницы => самое позднее время изменения среди языковых
+     * версий. Объединяет все языковые папки (или «плоское» хранилище).
+     *
+     * @return array<string,int>
+     */
+    private static function index(): array
+    {
+        $index = [];
+        foreach (self::dirs() as $dir) {
+            foreach (glob($dir . '/*.md') ?: [] as $file) {
+                $name  = basename($file, '.md');
+                $mtime = filemtime($file) ?: 0;
+                if (!isset($index[$name]) || $mtime > $index[$name]) {
+                    $index[$name] = $mtime;
+                }
+            }
+        }
+        return $index;
+    }
+
     /** @return string[] Имена всех существующих страниц. */
     public static function all(): array
     {
-        if (!is_dir(PAGES_DIR)) {
-            return [];
-        }
-        $names = [];
-        foreach (glob(PAGES_DIR . '/*.md') ?: [] as $file) {
-            $names[] = basename($file, '.md');
-        }
+        $names = array_keys(self::index());
         sort($names, SORT_NATURAL | SORT_FLAG_CASE);
         return $names;
     }
@@ -237,17 +325,13 @@ final class Page
     /** @return string[] Недавно изменённые страницы (по времени файла). */
     public static function recent(int $limit = 8): array
     {
-        if (!is_dir(PAGES_DIR)) {
-            return [];
-        }
-        $files = glob(PAGES_DIR . '/*.md') ?: [];
-        usort($files, static fn($a, $b) => filemtime($b) <=> filemtime($a));
-        $names = array_map(static fn($f) => basename($f, '.md'), $files);
-        return array_slice($names, 0, $limit);
+        $index = self::index();
+        arsort($index, SORT_NUMERIC);
+        return array_slice(array_keys($index), 0, $limit);
     }
 
     public static function count(): int
     {
-        return is_dir(PAGES_DIR) ? count(glob(PAGES_DIR . '/*.md') ?: []) : 0;
+        return count(self::index());
     }
 }

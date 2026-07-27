@@ -76,15 +76,9 @@ $editorData = [
 
                 <div class="side-panel__block">
                     <label class="field-label"><?= t('editor.card_image') ?></label>
-                    <div class="infobox-image-pick" id="infobox-image-pick">
-                        <div class="infobox-image-pick__preview" id="ib-image-preview">
-                            <span class="muted"><?= t('js.img_none') ?></span>
-                        </div>
-                        <div class="infobox-image-pick__actions">
-                            <button type="button" class="btn btn--sm" id="ib-image-choose"><?= t('editor.choose') ?></button>
-                            <button type="button" class="btn btn--sm btn--ghost" id="ib-image-clear"><?= t('editor.remove') ?></button>
-                        </div>
-                    </div>
+                    <div class="ib-images" id="ib-images"><!-- миниатюры добавляются JS --></div>
+                    <button type="button" class="btn btn--sm btn--ghost" id="ib-image-add"><?= t('editor.add_image') ?></button>
+                    <p class="hint"><?= t('editor.images_hint') ?></p>
                 </div>
 
                 <div class="side-panel__block">

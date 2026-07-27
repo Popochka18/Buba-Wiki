@@ -8,22 +8,51 @@
     const addBtn = document.getElementById('ib-add-field');
     const templateSelect = document.getElementById('ib-template');
     const collectionsInput = document.getElementById('ib-collections');
-    const imagePreview = document.getElementById('ib-image-preview');
-    const imageChoose = document.getElementById('ib-image-choose');
-    const imageClear = document.getElementById('ib-image-clear');
+    const imagesBox = document.getElementById('ib-images');
+    const imageAdd = document.getElementById('ib-image-add');
 
     let reserved = [];
     let templates = [];
-    let imageFile = '';
+    let imageFiles = []; // Несколько изображений — карусель в статье.
 
-    function setImage(file) {
-        imageFile = file || '';
-        imagePreview.innerHTML = '';
-        if (imageFile) {
-            const url = window.AvroriaMarkdown.imageUrl(imageFile);
-            imagePreview.appendChild(A.el('img', { src: url, alt: imageFile }));
-        } else {
-            imagePreview.appendChild(A.el('span', { class: 'muted', text: A.t('js.img_none') }));
+    function renderImages() {
+        imagesBox.innerHTML = '';
+        if (!imageFiles.length) {
+            imagesBox.appendChild(A.el('span', { class: 'muted', text: A.t('js.img_none') }));
+            return;
+        }
+        imageFiles.forEach((file, i) => {
+            const left = A.el('button', { class: 'ib-image__btn', type: 'button', title: A.t('js.move_left'), text: '◀' });
+            const right = A.el('button', { class: 'ib-image__btn', type: 'button', title: A.t('js.move_right'), text: '▶' });
+            const del = A.el('button', { class: 'ib-image__btn ib-image__btn--del', type: 'button', title: A.t('js.delete'), text: '✕' });
+
+            left.addEventListener('click', () => moveImage(i, -1));
+            right.addEventListener('click', () => moveImage(i, 1));
+            del.addEventListener('click', () => { imageFiles.splice(i, 1); renderImages(); });
+
+            imagesBox.appendChild(A.el('div', { class: 'ib-image', title: file }, [
+                A.el('img', { src: window.AvroriaMarkdown.imageUrl(file), alt: file }),
+                A.el('div', { class: 'ib-image__btns' }, [left, right, del]),
+            ]));
+        });
+    }
+
+    function moveImage(i, d) {
+        const j = i + d;
+        if (j < 0 || j >= imageFiles.length) return;
+        [imageFiles[i], imageFiles[j]] = [imageFiles[j], imageFiles[i]];
+        renderImages();
+    }
+
+    function setImages(files) {
+        imageFiles = (files || []).map(String).filter(Boolean);
+        renderImages();
+    }
+
+    function addImage(file) {
+        if (file && !imageFiles.includes(file)) {
+            imageFiles.push(file);
+            renderImages();
         }
     }
 
@@ -103,7 +132,10 @@
 
         Object.keys(meta).forEach((key) => {
             const lower = key.toLowerCase();
-            if (lower === 'image') { setImage(meta[key]); return; }
+            if (lower === 'image') {
+                setImages(Array.isArray(meta[key]) ? meta[key] : [meta[key]]);
+                return;
+            }
             if (lower === 'collections' || lower === 'коллекции') {
                 const v = meta[key];
                 collectionsInput.value = Array.isArray(v) ? v.join(', ') : String(v);
@@ -114,13 +146,14 @@
             addField(key, val);
         });
 
-        setImage(imageFile);
+        renderImages();
     }
 
     /* Возвращает мету в порядке: image → поля → collections. */
     function getMeta() {
         const meta = {};
-        if (imageFile) meta.image = imageFile;
+        if (imageFiles.length === 1) meta.image = imageFiles[0];
+        else if (imageFiles.length > 1) meta.image = imageFiles.slice();
 
         fieldsBox.querySelectorAll('.ib-field').forEach((f) => {
             const key = f.querySelector('.ib-field__key').value.trim();
@@ -141,10 +174,9 @@
         if (id) applyTemplate(id);
         templateSelect.value = '';
     });
-    if (imageChoose) imageChoose.addEventListener('click', () => {
-        window.AvroriaImages.open((img) => setImage(img.name));
+    if (imageAdd) imageAdd.addEventListener('click', () => {
+        window.AvroriaImages.open((img) => addImage(img.name));
     });
-    if (imageClear) imageClear.addEventListener('click', () => setImage(''));
 
-    window.AvroriaInfobox = { init, getMeta, setImage };
+    window.AvroriaInfobox = { init, getMeta };
 })();

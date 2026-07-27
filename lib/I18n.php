@@ -119,7 +119,8 @@ final class I18n
             'js.loading', 'js.load_failed', 'js.gallery_empty',
             'js.uploading', 'js.uploaded', 'js.upload_failed', 'js.net_error_upload',
             'js.img_none', 'js.field_key_ph', 'js.field_val_ph',
-            'js.move_up', 'js.move_down', 'js.delete', 'js.template_none',
+            'js.move_up', 'js.move_down', 'js.move_left', 'js.move_right',
+            'js.delete', 'js.template_none',
         ];
         $out = [];
         foreach ($keys as $k) {
@@ -250,6 +251,9 @@ final class I18n
             // Инфобокс (рендер).
             'infobox.label'        => 'Карточка статьи',
             'infobox.no_image'     => 'Нет изображения',
+            'infobox.prev'         => 'Предыдущее изображение',
+            'infobox.next'         => 'Следующее изображение',
+            'infobox.goto'         => 'Изображение %d',
 
             // Редактор.
             'editor.name'          => 'Название',
@@ -271,9 +275,9 @@ final class I18n
             'editor.tb.toggle'     => 'Переключить режим',
             'editor.tb.source'     => '⟱ Исходник',
             'editor.infobox'       => '⚜ Инфобокс',
-            'editor.card_image'    => 'Изображение карточки',
-            'editor.choose'        => 'Выбрать…',
-            'editor.remove'        => 'Убрать',
+            'editor.card_image'    => 'Изображения карточки',
+            'editor.add_image'     => '＋ Добавить изображение',
+            'editor.images_hint'   => 'Несколько изображений — карусель в статье.',
             'editor.template'      => 'Шаблон',
             'editor.template_hint' => 'Подставит типовые поля выбранного шаблона.',
             'editor.fields'        => 'Поля',
@@ -363,6 +367,8 @@ final class I18n
             'js.field_val_ph'      => 'значение (можно [[ссылку]])',
             'js.move_up'           => 'Выше',
             'js.move_down'         => 'Ниже',
+            'js.move_left'         => 'Левее',
+            'js.move_right'        => 'Правее',
             'js.delete'            => 'Удалить',
             'js.template_none'     => '— выберите шаблон —',
         ];
@@ -429,6 +435,9 @@ final class I18n
             // Infobox (render).
             'infobox.label'        => 'Article infobox',
             'infobox.no_image'     => 'No image',
+            'infobox.prev'         => 'Previous image',
+            'infobox.next'         => 'Next image',
+            'infobox.goto'         => 'Image %d',
 
             // Editor.
             'editor.name'          => 'Title',
@@ -450,9 +459,9 @@ final class I18n
             'editor.tb.toggle'     => 'Toggle mode',
             'editor.tb.source'     => '⟱ Source',
             'editor.infobox'       => '⚜ Infobox',
-            'editor.card_image'    => 'Card image',
-            'editor.choose'        => 'Choose…',
-            'editor.remove'        => 'Remove',
+            'editor.card_image'    => 'Card images',
+            'editor.add_image'     => '＋ Add image',
+            'editor.images_hint'   => 'Several images make a carousel in the article.',
             'editor.template'      => 'Template',
             'editor.template_hint' => 'Adds the typical fields of the chosen template.',
             'editor.fields'        => 'Fields',
@@ -542,6 +551,8 @@ final class I18n
             'js.field_val_ph'      => 'value (you can use [[links]])',
             'js.move_up'           => 'Move up',
             'js.move_down'         => 'Move down',
+            'js.move_left'         => 'Move left',
+            'js.move_right'        => 'Move right',
             'js.delete'            => 'Delete',
             'js.template_none'     => '— choose a template —',
         ];

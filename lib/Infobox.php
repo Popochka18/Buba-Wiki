@@ -10,21 +10,27 @@ final class Infobox
     public static function render(Page $page): string
     {
         $fields = $page->infoboxFields();
-        $image  = $page->image();
+        $images = $page->images();
+        $valid  = array_values(array_filter(
+            $images,
+            static fn(string $f) => is_file(IMAGES_DIR . '/' . $f)
+        ));
 
-        if ($image === null && empty($fields)) {
+        if (empty($images) && empty($fields)) {
             return '';
         }
 
         $h  = '<aside class="infobox" aria-label="' . e(t('infobox.label')) . '">';
         $h .= '<div class="infobox__title">' . e($page->title()) . '</div>';
 
-        // Изображение.
+        // Изображение: одно — статичное, несколько — карусель.
         $h .= '<div class="infobox__image">';
-        if ($image !== null && is_file(IMAGES_DIR . '/' . $image)) {
-            $h .= '<img src="' . image_url($image) . '" alt="' . e($page->title()) . '">';
+        if (count($valid) > 1) {
+            $h .= self::carousel($valid, $page->title());
+        } elseif (count($valid) === 1) {
+            $h .= '<img src="' . image_url($valid[0]) . '" alt="' . e($page->title()) . '">';
         } else {
-            $h .= '<div class="infobox__noimage" title="' . ($image !== null ? e($image) : '') . '">'
+            $h .= '<div class="infobox__noimage" title="' . (!empty($images) ? e($images[0]) : '') . '">'
                 . '<span class="infobox__noimage-ic">⚜</span>'
                 . '<span>' . e(t('infobox.no_image')) . '</span></div>';
         }
@@ -41,6 +47,41 @@ final class Infobox
         }
 
         $h .= '</aside>';
+        return $h;
+    }
+
+    /**
+     * Карусель изображений: слайды, стрелки, точки. Управление — в app.js
+     * по атрибуту data-carousel; без JS показывается первый слайд.
+     *
+     * @param string[] $files
+     */
+    private static function carousel(array $files, string $title): string
+    {
+        $h = '<div class="carousel" data-carousel>';
+
+        $h .= '<div class="carousel__viewport">';
+        foreach ($files as $i => $file) {
+            $h .= '<img class="carousel__slide' . ($i === 0 ? ' is-active' : '') . '" '
+                . 'src="' . image_url($file) . '" '
+                . 'alt="' . e($title) . ' — ' . ($i + 1) . '/' . count($files) . '"'
+                . ($i === 0 ? '' : ' loading="lazy"') . '>';
+        }
+        $h .= '<button type="button" class="carousel__btn carousel__btn--prev" data-dir="-1" '
+            . 'aria-label="' . e(t('infobox.prev')) . '">‹</button>';
+        $h .= '<button type="button" class="carousel__btn carousel__btn--next" data-dir="1" '
+            . 'aria-label="' . e(t('infobox.next')) . '">›</button>';
+        $h .= '<span class="carousel__counter">1 / ' . count($files) . '</span>';
+        $h .= '</div>';
+
+        $h .= '<div class="carousel__dots" role="tablist">';
+        foreach ($files as $i => $file) {
+            $h .= '<button type="button" class="carousel__dot' . ($i === 0 ? ' is-active' : '') . '" '
+                . 'data-index="' . $i . '" aria-label="' . e(t('infobox.goto', $i + 1)) . '"></button>';
+        }
+        $h .= '</div>';
+
+        $h .= '</div>';
         return $h;
     }
 

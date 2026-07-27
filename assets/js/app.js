@@ -90,6 +90,39 @@
 
     document.querySelectorAll('.searchbar').forEach(wireSearch);
 
+    /* ---- Карусель изображений (инфобокс) ---- */
+    function wireCarousel(root) {
+        const slides = [...root.querySelectorAll('.carousel__slide')];
+        const dots = [...root.querySelectorAll('.carousel__dot')];
+        const counter = root.querySelector('.carousel__counter');
+        if (slides.length < 2) return;
+        let index = 0;
+
+        function show(i) {
+            index = (i + slides.length) % slides.length;
+            slides.forEach((s, n) => s.classList.toggle('is-active', n === index));
+            dots.forEach((d, n) => d.classList.toggle('is-active', n === index));
+            if (counter) counter.textContent = (index + 1) + ' / ' + slides.length;
+        }
+
+        root.querySelectorAll('.carousel__btn').forEach((b) =>
+            b.addEventListener('click', () => show(index + Number(b.dataset.dir))));
+        dots.forEach((d) =>
+            d.addEventListener('click', () => show(Number(d.dataset.index))));
+
+        // Свайп на сенсорных экранах.
+        let startX = null;
+        root.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+        root.addEventListener('touchend', (e) => {
+            if (startX === null) return;
+            const dx = e.changedTouches[0].clientX - startX;
+            if (Math.abs(dx) > 40) show(index + (dx < 0 ? 1 : -1));
+            startX = null;
+        }, { passive: true });
+    }
+
+    document.querySelectorAll('[data-carousel]').forEach(wireCarousel);
+
     // Переход к первому результату при отправке формы.
     Avroria.search = function (event) {
         event.preventDefault();
